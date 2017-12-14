@@ -1,0 +1,10 @@
+
+[ClassVersion("1.0.0.0"), FriendlyName("xRDRemoteDesktop")]
+class MSFT_xRDRemoteDesktop : OMI_BaseResource
+{
+    [key, Description("Specifies the name of the personal virtual desktop collection or session collection. The cmdlet publishes the RemoteApp program to this collection. ")] string CollectionName;
+    [write, Description("Specifies whether to show the RemoteApp program in the RD Web Access server, and in RemoteApp and Desktop Connections that the user subscribes to. ")] boolean ShowInWebAccess;
+    [write, Description("Specifies the Remote Desktop Connection Broker (RD Connection Broker) server for a Remote Desktop deployment.")] string ConnectionBroker;
+};
+
+
