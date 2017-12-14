@@ -3,7 +3,6 @@ if (!(Test-xRemoteDesktopSessionHostOsRequirement)) { Throw "The minimum OS requ
 Import-Module RemoteDesktop
 $localhost = [System.Net.Dns]::GetHostByName((hostname)).HostName
 
-
 #######################################################################
 # The Get-TargetResource cmdlet.
 #######################################################################
@@ -24,7 +23,7 @@ function Get-TargetResource
         [boolean] $ClientPrinterAsDefault,
         [boolean] $ClientPrinterRedirected,
         [string] $CollectionDescription,
-        [string] $ConnectionBroker,
+        [string] $ConnectionBroker = $localhost,
         [string] $CustomRdpProperty,
         [uint32] $DisconnectedSessionLimitMin,
         [string] $EncryptionLevel,
@@ -35,34 +34,36 @@ function Get-TargetResource
         [boolean] $TemporaryFoldersDeletedOnExit,
         [string] $UserGroup
     )
-        Write-Verbose "Getting currently configured RDSH Collection properties"
-        $collectionName = Get-RDSessionCollection | % {Get-RDSessionHost $_.CollectionName} | ? {$_.SessionHost -ieq $localhost} | % {$_.CollectionName}
-
-        $collectionGeneral = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName
-        $collectionClient = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -Client
-        $collectionConnection = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -Connection
-        $collectionSecurity = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -Security
-        $collectionUserGroup = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -UserGroup
+    Write-Verbose "Getting currently configured RDSH Collection properties"
+    $Collection = Get-RDSessionCollection -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -ErrorAction SilentlyContinue
+    if ($Collection -ne $null) {
+        $collectionGeneral = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker
+        $collectionClient = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -Client
+        $collectionConnection = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -Connection
+        $collectionSecurity = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -Security
+        $collectionUserGroup = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -UserGroup
         @{
-        "CollectionName" = $collectionGeneral.CollectionName;
-        "ActiveSessionLimitMin" = $collectionConnection.ActiveSessionLimitMin;
-        "AuthenticateUsingNLA" = $collectionSecurity.AuthenticateUsingNLA;
-        "AutomaticReconnectionEnabled" = $collectionConnection.AutomaticReconnectionEnabled;
-        "BrokenConnectionAction" = $collectionConnection.BrokenConnectionAction;
-        "ClientDeviceRedirectionOptions" = $collectionClient.ClientDeviceRedirectionOptions;
-        "ClientPrinterAsDefault" = $collectionClient.ClientPrinterAsDefault;
-        "ClientPrinterRedirected" = $collectionClient.ClientPrinterRedirected;
-        "CollectionDescription" = $collectionGeneral.CollectionDescription;
-        "CustomRdpProperty" = $collectionGeneral.CustomRdpProperty;
-        "DisconnectedSessionLimitMin" = $collectionGeneral.DisconnectedSessionLimitMin;
-        "EncryptionLevel" = $collectionSecurity.EncryptionLevel;
-        "IdleSessionLimitMin" = $collectionConnection.IdleSessionLimitMin;
-        "MaxRedirectedMonitors" = $collectionClient.MaxRedirectedMonitors;
-        "RDEasyPrintDriverEnabled" = $collectionClient.RDEasyPrintDriverEnabled;
-        "SecurityLayer" = $collectionSecurity.SecurityLayer;
-        "TemporaryFoldersDeletedOnExit" = $collectionConnection.TemporaryFoldersDeletedOnExit;
-        "UserGroup" = $collectionUserGroup.UserGroup;
+            "CollectionName"                 = $collectionGeneral.CollectionName;
+            "ActiveSessionLimitMin"          = $collectionConnection.ActiveSessionLimitMin;
+            "AuthenticateUsingNLA"           = $collectionSecurity.AuthenticateUsingNLA;
+            "AutomaticReconnectionEnabled"   = $collectionConnection.AutomaticReconnectionEnabled;
+            "BrokenConnectionAction"         = $collectionConnection.BrokenConnectionAction;
+            "ClientDeviceRedirectionOptions" = $collectionClient.ClientDeviceRedirectionOptions;
+            "ClientPrinterAsDefault"         = $collectionClient.ClientPrinterAsDefault;
+            "ClientPrinterRedirected"        = $collectionClient.ClientPrinterRedirected;
+            "CollectionDescription"          = $collectionGeneral.CollectionDescription;
+            "CustomRdpProperty"              = $collectionGeneral.CustomRdpProperty;
+            "DisconnectedSessionLimitMin"    = $collectionGeneral.DisconnectedSessionLimitMin;
+            "EncryptionLevel"                = $collectionSecurity.EncryptionLevel;
+            "IdleSessionLimitMin"            = $collectionConnection.IdleSessionLimitMin;
+            "MaxRedirectedMonitors"          = $collectionClient.MaxRedirectedMonitors;
+            "RDEasyPrintDriverEnabled"       = $collectionClient.RDEasyPrintDriverEnabled;
+            "SecurityLayer"                  = $collectionSecurity.SecurityLayer;
+            "TemporaryFoldersDeletedOnExit"  = $collectionConnection.TemporaryFoldersDeletedOnExit;
+            "UserGroup"                      = $collectionUserGroup.UserGroup;
         }
+    }
+
 }
 
 
@@ -70,7 +71,6 @@ function Get-TargetResource
 # The Set-TargetResource cmdlet.
 ########################################################################
 function Set-TargetResource
-
 {
     [CmdletBinding()]
     param
@@ -86,7 +86,7 @@ function Set-TargetResource
         [boolean] $ClientPrinterAsDefault,
         [boolean] $ClientPrinterRedirected,
         [string] $CollectionDescription,
-        [string] $ConnectionBroker,
+        [string] $ConnectionBroker = $localhost,
         [string] $CustomRdpProperty,
         [uint32] $DisconnectedSessionLimitMin,
         [string] $EncryptionLevel,
@@ -98,9 +98,17 @@ function Set-TargetResource
         [string] $UserGroup
     )
     Write-Verbose "Setting DSC collection properties"
-    $discoveredCollectionName = Get-RDSessionCollection | % {Get-RDSessionHost $_.CollectionName} | ? {$_.SessionHost -ieq $localhost} | % {$_.CollectionName}
-    if ($collectionName -ne $discoveredCollectionName) {$PSBoundParameters.collectionName = $discoveredCollectionName}
-    Set-RDSessionCollectionConfiguration @PSBoundParameters
+    $Collection = Get-RDSessionCollection -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -ErrorAction SilentlyContinue
+    if ($Collection -eq $null) {
+        Throw "Collection named $CollectionName does not exist!  Use xRDSessionCollection configuration to create the collection."
+    }
+    $ScriptBlock = {
+        Import-Module RemoteDesktop -Force # required to suppress "The term 'Set-RDSessionCollectionConfiguration' is not recognized as the name of a cmdlet, function, script file, or operable program." error
+        Set-RDSessionCollectionConfiguration @using:PSBoundParameters 
+    }
+    Start-Job -Name "Set-RDSessionCollectionConfiguration" -ScriptBlock $ScriptBlock | Out-Null
+    Get-Job -Name "Set-RDSessionCollectionConfiguration" | Wait-Job | Out-Null
+    Receive-Job -Name "Set-RDSessionCollectionConfiguration"
 }
 
 
@@ -124,7 +132,7 @@ function Test-TargetResource
         [boolean] $ClientPrinterAsDefault,
         [boolean] $ClientPrinterRedirected,
         [string] $CollectionDescription,
-        [string] $ConnectionBroker,
+        [string] $ConnectionBroker = $localhost,
         [string] $CustomRdpProperty,
         [uint32] $DisconnectedSessionLimitMin,
         [string] $EncryptionLevel,
@@ -137,14 +145,21 @@ function Test-TargetResource
     )
     
     Write-Verbose "Testing DSC collection properties"
-    $collectionName = Get-RDSessionCollection | % {Get-RDSessionHost $_.CollectionName} | ? {$_.SessionHost -ieq $localhost} | % {$_.CollectionName}
+    $Collection = Get-RDSessionCollection -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -ErrorAction SilentlyContinue
+    if ($Collection -eq $null) {
+        Write-Verbose "Collection $CollectionName does not exist!"
+        Return $false
+    }
     $PSBoundParameters.Remove("Verbose") | out-null
     $PSBoundParameters.Remove("Debug") | out-null
-    $PSBoundParameters.Remove("ConnectionBroker") | out-null
     $Check = $true
-
-    $Get = Get-TargetResource -CollectionName $CollectionName
-    $PSBoundParameters.keys | % {if ($PSBoundParameters[$_] -ne $Get[$_]) {$Check = $false} }
+    $Get = Get-TargetResource @PSBoundParameters
+    $PSBoundParameters.Remove("ConnectionBroker") | out-null
+    $PSBoundParameters.keys | ForEach-Object {
+        if ($PSBoundParameters[$_] -ne $Get[$_]) {
+            $Check = $false
+        } 
+    }
     $Check
 }
 

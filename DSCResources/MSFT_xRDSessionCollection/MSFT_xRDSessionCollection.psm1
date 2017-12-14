@@ -18,16 +18,20 @@ function Get-TargetResource
         [parameter(Mandatory)]
         [string] $SessionHost,
         [string] $CollectionDescription,
-        [string] $ConnectionBroker
+        [string] $ConnectionBroker = $localhost
     )
     Write-Verbose "Getting information about RDSH collection."
-        $Collection = Get-RDSessionCollection -ErrorAction SilentlyContinue
-        @{
-        "CollectionName" = $Collection.CollectionName;
+    $Collection = Get-RDSessionCollection -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -ErrorAction SilentlyContinue
+    if ($Collection -eq $null) {
+        Write-Verbose "Collection $CollectionName does not exist!"
+        Return $false
+    }
+    @{
+        "CollectionName"        = $Collection.CollectionName;
         "CollectionDescription" = $Collection.CollectionDescription
-        "SessionHost" = $localhost
-        "ConnectionBroker" = $ConnectionBroker
-        }
+        "SessionHost"           = (Get-RDSessionHost -CollectionName $Collection.CollectionName -ConnectionBroker $ConnectionBroker -ErrorAction SilentlyContinue).SessionHost
+        "ConnectionBroker"      = $ConnectionBroker
+    }
 }
 
 
@@ -46,14 +50,14 @@ function Set-TargetResource
         [parameter(Mandatory)]
         [string] $SessionHost,
         [string] $CollectionDescription,
-        [string] $ConnectionBroker
+        [string] $ConnectionBroker = $localhost
     )
     Write-Verbose "Creating a new RDSH collection."
     if ($localhost -eq $ConnectionBroker) {
         New-RDSessionCollection @PSBoundParameters
         }
     else {
-        $PSBoundParameters.Remove("Description")
+        $PSBoundParameters.Remove("CollectionDescription")
         Add-RDSessionHost @PSBoundParameters
         }
 }
@@ -74,10 +78,10 @@ function Test-TargetResource
         [parameter(Mandatory)]
         [string] $SessionHost,
         [string] $CollectionDescription,
-        [string] $ConnectionBroker
+        [string] $ConnectionBroker = $localhost
     )
     Write-Verbose "Checking for existance of RDSH collection."
-    (Get-TargetResource @PSBoundParameters).CollectionName -ne $null
+    (Get-TargetResource @PSBoundParameters).CollectionName -ieq $CollectionName
 }
 
 

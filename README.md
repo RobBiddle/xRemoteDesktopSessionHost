@@ -80,9 +80,18 @@ This path resolves to the same location as the value of the FilePath parameter, 
 To allow all users to see a RemoteApp program, provide a value of Null.
 * **ShowInWebAccess**: Specifies whether to show the RemoteApp program in the RD Web Access server, and in RemoteApp and Desktop Connections that the user subscribes to.
 
+### xRDRemoteDesktop
+
+* **CollectionName**: Specifies the name of the personal virtual desktop collection or session collection.
+* **ShowInWebAccess**: Determines if the RemoteDesktop connection is shown by the RD Web Access Server.
+* **ConnectionBroker**: The FQDN of a server to host the RD Connection Broker role service.
+
 ## Versions
 
 ### Unreleased
+* **BREAKING CHANGES**:
+    * Adding **xRDRemoteDesktop** DSC Resource
+    * Most Get cmdlet calls in existing DSC Resources have been refactored to specify ConnectionBroker and/or CollectionName so as to constrain changes to only named Collections/Deployments/RemoteApps.
 
 ### 1.4.0.0
 * Updated CollectionName parameter to validate length between 1 and 15 characters, and added tests to verify.

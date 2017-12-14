@@ -21,6 +21,7 @@ function Get-TargetResource
         [string] $FilePath = "C:\Windows\System32\calc.exe",
         [parameter(Mandatory)]
         [string] $Alias = "calc",
+        [string] $ConnectionBroker = $localhost,
         [string] $FileVirtualPath,
         [string] $FolderName,
         [string] $CommandLineSetting,
@@ -31,8 +32,8 @@ function Get-TargetResource
         [boolean] $ShowInWebAccess
     )
         Write-Verbose "Getting published RemoteApp program $DisplayName, if one exists."
-        $CollectionName = Get-RDSessionCollection | % {Get-RDSessionHost $_.CollectionName} | ? {$_.SessionHost -ieq $localhost} | % {$_.CollectionName}
-        $remoteApp = Get-RDRemoteApp -CollectionName $CollectionName -DisplayName $DisplayName -Alias $Alias
+        $Collection = Get-RDSessionCollection -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker
+        $remoteApp = Get-RDRemoteApp -CollectionName $Collection.CollectionName -ConnectionBroker $ConnectionBroker -DisplayName $DisplayName -Alias $Alias
 
         @{
         "CollectionName" = $remoteApp.CollectionName;
@@ -55,7 +56,6 @@ function Get-TargetResource
 # The Set-TargetResource cmdlet.
 ########################################################################
 function Set-TargetResource
-
 {
     [CmdletBinding()]
     param
@@ -69,6 +69,7 @@ function Set-TargetResource
         [string] $FilePath,
         [parameter(Mandatory)]
         [string] $Alias,
+        [string] $ConnectionBroker = $localhost,
         [string] $FileVirtualPath,
         [string] $FolderName,
         [string] $CommandLineSetting,
@@ -79,8 +80,10 @@ function Set-TargetResource
         [boolean] $ShowInWebAccess
     )
     Write-Verbose "Making updates to RemoteApp."
-    $CollectionName = Get-RDSessionCollection | % {Get-RDSessionHost $_.CollectionName} | ? {$_.SessionHost -ieq $localhost} | % {$_.CollectionName}
-    $PSBoundParameters.collectionName = $CollectionName
+    $Collection = Get-RDSessionCollection -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker  -ErrorAction SilentlyContinue
+    if ($Collection -eq $null) {
+        Throw "Collection named $CollectionName does not exist!  Use xRDSessionCollection configuration to create the collection."
+    }
     if (!$(Get-RDRemoteApp -Alias $Alias)) {
         New-RDRemoteApp @PSBoundParameters
         }
@@ -108,6 +111,7 @@ function Test-TargetResource
         [string] $FilePath,
         [parameter(Mandatory)]
         [string] $Alias,
+        [string] $ConnectionBroker = $localhost,
         [string] $FileVirtualPath,
         [string] $FolderName,
         [string] $CommandLineSetting,
@@ -118,14 +122,17 @@ function Test-TargetResource
         [boolean] $ShowInWebAccess
     )
     Write-Verbose "Testing if RemoteApp is published."
-    $collectionName = Get-RDSessionCollection | % {Get-RDSessionHost $_.CollectionName} | ? {$_.SessionHost -ieq $localhost} | % {$_.CollectionName}
+    $Collection = Get-RDSessionCollection -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -ErrorAction SilentlyContinue
+    if ($Collection -eq $null) {
+        Write-Verbose "Collection named $CollectionName does not exist!  Use xRDSessionCollection configuration to create the collection."
+        Return $false
+    }
     $PSBoundParameters.Remove("Verbose") | out-null
     $PSBoundParameters.Remove("Debug") | out-null
-    $PSBoundParameters.Remove("ConnectionBroker") | out-null
     $Check = $true
     
-    $Get = Get-TargetResource -CollectionName $CollectionName -DisplayName $DisplayName -FilePath $FilePath -Alias $Alias
-    $PSBoundParameters.keys | % {if ($PSBoundParameters[$_] -ne $Get[$_]) {$Check = $false} }
+    $Get = Get-TargetResource -CollectionName $Collection.CollectionName -DisplayName $DisplayName -FilePath $FilePath -Alias $Alias
+    $PSBoundParameters.keys | ForEach-ObjectorEach-Object {if ($PSBoundParameters[$_] -ne $Get[$_]) {$Check = $false} }
     $Check
 }
 

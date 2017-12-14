@@ -1,6 +1,7 @@
 Import-Module -Name "$PSScriptRoot\..\..\xRemoteDesktopSessionHostCommon.psm1"
 if (!(Test-xRemoteDesktopSessionHostOsRequirement)) { Throw "The minimum OS requirement was not met."}
 Import-Module RemoteDesktop
+$localhost = [System.Net.Dns]::GetHostByName((hostname)).HostName
 
 #######################################################################
 # The Get-TargetResource cmdlet.
@@ -13,13 +14,12 @@ function Get-TargetResource
     (    
         [parameter(Mandatory)]
         [string] $SessionHost,
-        [parameter(Mandatory)]
-        [string] $ConnectionBroker,
+        [string] $ConnectionBroker = $localhost,
         [parameter(Mandatory)]
         [string] $WebAccessServer
     )
     Write-Verbose "Getting list of RD Server roles."
-        $Deployed = Get-RDServer -ErrorAction SilentlyContinue
+        $Deployed = Get-RDServer -ConnectionBroker $ConnectionBroker -ErrorAction SilentlyContinue
         @{
         "SessionHost" = $Deployed | ? Roles -contains "RDS-RD-SERVER" | % Server;
         "ConnectionBroker" = $Deployed | ? Roles -contains "RDS-CONNECTION-BROKER" | % Server;
@@ -39,8 +39,7 @@ function Set-TargetResource
     (    
         [parameter(Mandatory)]
         [string] $SessionHost,
-        [parameter(Mandatory)]
-        [string] $ConnectionBroker,
+        [string] $ConnectionBroker = $localhost,
         [parameter(Mandatory)]
         [string] $WebAccessServer
     )
@@ -62,8 +61,7 @@ function Test-TargetResource
     (    
         [parameter(Mandatory)]
         [string] $SessionHost,
-        [parameter(Mandatory)]
-        [string] $ConnectionBroker,
+        [string] $ConnectionBroker = $localhost,
         [parameter(Mandatory)]
         [string] $WebAccessServer
     )
