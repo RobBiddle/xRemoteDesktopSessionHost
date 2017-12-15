@@ -86,6 +86,22 @@ To allow all users to see a RemoteApp program, provide a value of Null.
 * **ShowInWebAccess**: Determines if the RemoteDesktop connection is shown by the RD Web Access Server.
 * **ConnectionBroker**: The FQDN of a server to host the RD Connection Broker role service.
 
+### xRDGatewayConfiguration
+
+* **GatewayExternalFqdn**: Specifies the External FQDN of the RD Gateway.
+* **GatewayMode**: Specifies the RD Gateway usage mode.
+* **LogonMethod**: Specifies the LogonMethod to use for RD Gateway Authentication.
+* **ConnectionBroker**: The FQDN of a server to host the RD Connection Broker role service.
+* **BypassLocal**: Indicates whether authorized remote users bypass the RD Gateway server for local connections. By default, the value of this parameter is $False.
+* **UseCachedCredentials**: Indicates whether or not remote users can use RD Gateway access credentials to authenticate access to the remote computer.
+
+### xRDLicenseConfiguration
+
+* **LicenseServer**: Specifies the FQDN of the RD Licensing server to configure.
+* **Mode**: Specifies the licensing mode to configure for the deployment. Valid values are PerUser, PerDevice, and NotConfigured.
+* **ConnectionBroker**: The FQDN of a server to host the RD Connection Broker role service.
+
+
 ## Versions
 
 ### Unreleased

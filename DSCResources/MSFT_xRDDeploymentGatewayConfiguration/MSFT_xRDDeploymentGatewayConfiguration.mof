@@ -1,0 +1,11 @@
+
+[ClassVersion("1.0.0.0"), FriendlyName("xRDDeploymentGatewayConfiguration")]
+class MSFT_xRDDeploymentGatewayConfiguration : OMI_BaseResource
+{
+    [key, Description("Specifies the External FQDN of the RD Gateway. ")] string GatewayExternalFqdn;
+    [write, Description("Specifies the FQDN of a server to host the RD Connection Broker role service.")] string ConnectionBroker;
+    [key, Description("Specifies the RD Gateway usage mode. ")] string GatewayMode;
+    [write, Description("Indicates whether authorized remote users bypass the RD Gateway server for local connections. By default, the value of this parameter is $False..")] bool BypassLocal;
+    [write, Description("Specifies the LogonMethod to use for RD Gateway Authentication.")] string LogonMethod;
+    [write, Description("Indicates whether or not remote users can use RD Gateway access credentials to authenticate access to the remote computer.")] bool UseCachedCredentials;
+};
