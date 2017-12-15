@@ -27,10 +27,10 @@ function Get-TargetResource {
         [string]
         $LogonMethod,
 
-        [bool]
+        [boolean]
         $BypassLocal,
 
-        [bool]
+        [boolean]
         $UseCachedCredentials
     )
     Write-Verbose "Getting RD Deployment Gateway Configuration"
@@ -69,10 +69,10 @@ function Set-TargetResource
         [string]
         $LogonMethod,
         
-        [bool]
+        [boolean]
         $BypassLocal,
 
-        [bool]
+        [boolean]
         $UseCachedCredentials
     )
 
@@ -105,10 +105,10 @@ function Test-TargetResource {
         [string]
         $LogonMethod,
           
-        [bool]
+        [boolean]
         $BypassLocal,
   
-        [bool]
+        [boolean]
         $UseCachedCredentials
     )
     Write-Verbose "Checking RD Deployment Gateway Configuration."
