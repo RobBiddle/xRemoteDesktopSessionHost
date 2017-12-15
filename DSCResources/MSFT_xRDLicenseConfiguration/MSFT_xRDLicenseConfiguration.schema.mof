@@ -2,7 +2,7 @@
 [ClassVersion("1.0.0.0"), FriendlyName("xRDLicenseConfiguration")]
 class MSFT_xRDLicenseConfiguration : OMI_BaseResource
 {
-    [key, Description("Specifies the FQDN of the RD Licensing server to configure. ")] string LicenseServer;
+    [key, Description("Specifies the FQDN of the RD Licensing server to configure. ")] string LicenseServer[];
     [key, Description("Specifies the licensing mode to configure for the deployment. Valid values are PerUser, PerDevice, and NotConfigured.Specifies the licensing mode to configure for the deployment. Valid values are PerUser, PerDevice, and NotConfigured.")] string Mode;
     [write, Description("Specifies the FQDN of a server to host the RD Connection Broker role service.")] string ConnectionBroker;
 };
