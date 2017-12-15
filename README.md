@@ -86,7 +86,7 @@ To allow all users to see a RemoteApp program, provide a value of Null.
 * **ShowInWebAccess**: Determines if the RemoteDesktop connection is shown by the RD Web Access Server.
 * **ConnectionBroker**: The FQDN of a server to host the RD Connection Broker role service.
 
-### xRDGatewayConfiguration
+### xRDDeploymentGatewayConfiguration
 
 * **GatewayExternalFqdn**: Specifies the External FQDN of the RD Gateway.
 * **GatewayMode**: Specifies the RD Gateway usage mode.
