@@ -24,6 +24,8 @@ Please check out common DSC Resources [contributing guidelines](https://github.c
 * **SessionHost**: Specifies the FQDN of a servers to host the RD Session Host role service.
 * **ConnectionBroker**: The FQDN of a server to host the RD Connection Broker role service.
 * **WebAccessServer**: The FQDN of a server to host the RD Web Access role service.
+* **GatewayExternalFqdn**: Specifies the External FQDN of the RD Gateway.
+* **GatewayServer**: Specifies the FQDN of a server to host the RD Gateway role service.
 
 ### xRDSessionCollection
 
@@ -105,9 +107,15 @@ To allow all users to see a RemoteApp program, provide a value of Null.
 ## Versions
 
 ### Unreleased
-* **BREAKING CHANGES**:
-    * Adding **xRDRemoteDesktop** DSC Resource
+* Additions/Modifications from: RobBiddle
+    * Added **xRDDeploymentGatewayConfiguration** DSC Resource
+    * Added **xRDLicenseConfiguration** DSC Resource
+    * Added **xRDRemoteDesktop** DSC Resource
+    * Modified **xRDSessionDeployment** DSC Resource to add the ability to confiugre a Remote Desktop Gateway
     * Most Get cmdlet calls in existing DSC Resources have been refactored to specify ConnectionBroker and/or CollectionName so as to constrain changes to only named Collections/Deployments/RemoteApps.
+    * This DSC Resource module now allows works when splitting the deployment of RD Roles accross multiple systems
+    * This DSC Resource module will now ADD to an existing deployment if necessary 
+
 
 ### 1.4.0.0
 * Updated CollectionName parameter to validate length between 1 and 15 characters, and added tests to verify.
