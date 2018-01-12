@@ -37,7 +37,7 @@ function Get-TargetResource
     Write-Verbose "Getting currently configured RDSH Collection properties"
     $Collection = Get-RDSessionCollection -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -ErrorAction SilentlyContinue
     if ($Collection -ne $null) {
-        $collectionGeneral = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker
+        $collectionGeneral = $Collection
         $collectionClient = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -Client
         $collectionConnection = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -Connection
         $collectionSecurity = Get-RDSessionCollectionConfiguration -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker -Security
