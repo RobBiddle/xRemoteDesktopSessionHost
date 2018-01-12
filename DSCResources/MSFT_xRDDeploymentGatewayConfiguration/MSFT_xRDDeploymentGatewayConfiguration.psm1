@@ -77,7 +77,7 @@ function Set-TargetResource
     )
 
     Write-Verbose "Setting RD Deployment Gateway Configuration."
-    Set-RDDeploymentGatewayConfiguration @PSBoundParameters -ErrorAction Continue
+    Set-RDDeploymentGatewayConfiguration @PSBoundParameters -Force -ErrorAction Continue
 }
 
 
