@@ -52,14 +52,17 @@ function Set-TargetResource
         [string] $CollectionDescription,
         [string] $ConnectionBroker = $localhost
     )
-    Write-Verbose "Creating a new RDSH collection."
-    if ($localhost -eq $ConnectionBroker) {
+    Write-Verbose "Checking RDSH collection."
+    $Get = Get-TargetResource @PSBoundParameters
+    if ($Get.CollectionName -ine $CollectionName) {
+        Write-Verbose "Creating a new RDSH collection."
         New-RDSessionCollection @PSBoundParameters
-        }
+    }
     else {
+        Write-Verbose "Modifying existing RDSH collection."
         $PSBoundParameters.Remove("CollectionDescription")
         Add-RDSessionHost @PSBoundParameters
-        }
+    }
 }
 
 
@@ -80,8 +83,19 @@ function Test-TargetResource
         [string] $CollectionDescription,
         [string] $ConnectionBroker = $localhost
     )
-    Write-Verbose "Checking for existance of RDSH collection."
-    (Get-TargetResource @PSBoundParameters).CollectionName -ieq $CollectionName
+    Write-Verbose "Checking RDSH collection."
+    $PSBoundParameters.Remove("Verbose") | out-null
+    $PSBoundParameters.Remove("Debug") | out-null
+    $Check = $true
+    $Get = Get-TargetResource @PSBoundParameters
+    $PSBoundParameters.Remove("ConnectionBroker") | out-null
+    $PSBoundParameters.Remove("CollectionDescription") | out-null
+    $PSBoundParameters.keys | ForEach-Object {
+        if (-NOT ($Get[$_] -imatch $PSBoundParameters[$_])) {
+            $Check = $false
+        }
+    }
+    $Check
 }
 
 
