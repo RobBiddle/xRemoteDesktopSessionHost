@@ -103,15 +103,35 @@ To allow all users to see a RemoteApp program, provide a value of Null.
 * **Mode**: Specifies the licensing mode to configure for the deployment. Valid values are PerUser, PerDevice, and NotConfigured.
 * **ConnectionBroker**: The FQDN of a server to host the RD Connection Broker role service.
 
+### xRDCertificate
+
+* **Role**: Specifies the RD Role associated with this Certificate.
+* **Thumbprint**: Specifies the Thumbprint of the Certificate.
+* **ConnectionBroker**: The FQDN of a server to host the RD Connection Broker role service.
+
+### xRDClientAccess
+
+* **ClientAccessName**: Specifies a DNS name for clients to use to connect to a Remote Desktop deployment.
+* **ConnectionBroker**: The FQDN of a server to host the RD Connection Broker role service.
+
+### xRDWorkspace
+
+* **WorkspaceName**: Specifies the RD Workspace Name.
+* **ConnectionBroker**: The FQDN of a server to host the RD Connection Broker role service.
 
 ## Versions
 
 ### Unreleased
 * Additions/Modifications from: RobBiddle
+    * Added **xRDCertificate** DSC Resource
+    * Added **xRDClientAccess** DSC Resource
     * Added **xRDDeploymentGatewayConfiguration** DSC Resource
     * Added **xRDLicenseConfiguration** DSC Resource
     * Added **xRDRemoteDesktop** DSC Resource
+    * Added **xRDWorkspace** DSC Resource
     * Modified **xRDSessionDeployment** DSC Resource to add the ability to confiugre a Remote Desktop Gateway
+    * Modified **xRDRemoteApp** to accept an array of UserGroups
+    * Modified **xRDSessionCollectionConfiguration** to accept array for UserGroup
     * Most Get cmdlet calls in existing DSC Resources have been refactored to specify ConnectionBroker and/or CollectionName so as to constrain changes to only named Collections/Deployments/RemoteApps.
     * This DSC Resource module now allows works when splitting the deployment of RD Roles accross multiple systems
     * This DSC Resource module will now ADD to an existing deployment if necessary 

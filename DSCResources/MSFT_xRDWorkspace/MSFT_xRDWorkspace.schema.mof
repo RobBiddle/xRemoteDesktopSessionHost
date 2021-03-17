@@ -1,0 +1,7 @@
+
+[ClassVersion("1.0.0.0"), FriendlyName("xRDWorkspace")]
+class MSFT_xRDWorkspace : OMI_BaseResource
+{
+    [write, Description("Specifies the FQDN of a server to host the RD Connection Broker role service.")] string ConnectionBroker;
+    [key, Description("Specifies the RD Workspace Name.")] string WorkspaceName;
+};

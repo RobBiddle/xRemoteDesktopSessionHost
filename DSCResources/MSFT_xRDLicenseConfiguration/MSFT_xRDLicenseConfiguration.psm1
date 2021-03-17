@@ -12,14 +12,12 @@ function Get-TargetResource {
     param
     (    
         [parameter(Mandatory)]
-        [string[]]
+        [string]
         $LicenseServer,
-
         [parameter(Mandatory)]
         [ValidateSet("PerUser", "PerDevice", "NotConfigured")]        
         [string]
         $Mode,
-
         [string]
         $ConnectionBroker = $localhost
     )
@@ -41,14 +39,12 @@ function Set-TargetResource
     param
     (    
         [parameter(Mandatory)]
-        [string[]]
+        [string]
         $LicenseServer,
-
         [parameter(Mandatory)]
         [ValidateSet("PerUser", "PerDevice", "NotConfigured")]        
         [string]
         $Mode,
-
         [string]
         $ConnectionBroker = $localhost
     )
@@ -67,14 +63,12 @@ function Test-TargetResource {
     param
     (    
         [parameter(Mandatory)]
-        [string[]]
+        [string]
         $LicenseServer,
-  
         [parameter(Mandatory)]
         [ValidateSet("PerUser", "PerDevice", "NotConfigured")]        
         [string]
         $Mode,
-  
         [string]
         $ConnectionBroker = $localhost
     )
@@ -85,7 +79,7 @@ function Test-TargetResource {
     $Get = Get-TargetResource @PSBoundParameters
     $PSBoundParameters.Remove("ConnectionBroker") | out-null
     $PSBoundParameters.keys | ForEach-Object {
-        if ($PSBoundParameters[$_] -ne $Get[$_]) {
+        if ($PSBoundParameters[$_] -ine $Get[$_]) {
             $Check = $false
         } 
     }

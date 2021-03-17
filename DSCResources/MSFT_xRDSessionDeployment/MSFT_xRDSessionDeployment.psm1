@@ -18,7 +18,8 @@ function Get-TargetResource
         [parameter(Mandatory)]
         [string] $WebAccessServer,
         [string] $GatewayExternalFqdn,
-        [string] $GatewayServer
+        [string] $GatewayServer,
+        [string] $LicenseServer
     )
     Write-Verbose "Getting list of RD Server roles."
         $Deployed = Get-RDServer -ConnectionBroker $ConnectionBroker -ErrorAction SilentlyContinue
@@ -27,6 +28,7 @@ function Get-TargetResource
         "ConnectionBroker" = $Deployed | Where-Object Roles -contains "RDS-CONNECTION-BROKER" | ForEach-Object Server;
         "WebAccessServer" = $Deployed | Where-Object Roles -contains "RDS-WEB-ACCESS" | ForEach-Object Server;
         "GatewayServer" = $Deployed | Where-Object Roles -contains "RDS-GATEWAY" | ForEach-Object Server;
+        "LicenseServer" = $Deployed | Where-Object Roles -contains "RDS-LICENSING" | ForEach-Object Server;
         }
 }
 
@@ -45,17 +47,26 @@ function Set-TargetResource
         [parameter(Mandatory)]
         [string] $WebAccessServer,
         [string] $GatewayExternalFqdn,
-        [string] $GatewayServer
+        [string] $GatewayServer,
+        [string] $LicenseServer
     )
     try {
+        # Set $Global:ErrorActionPreference to Stop in order to catch errors from New-RDSesionDeployment
+        $OriginalErrorActionPreference = $Global:ErrorActionPreference
+        $Global:ErrorActionPreference = 'Stop'
         Write-Verbose "Initiating new RDSH deployment."
         $SessionDeploymentParameters = $PSBoundParameters | Where-Object Keys -NotLike "GatewayServer"
+        # New-RDSessionDeployment will throw an error if an existing deployment is found
         New-RDSessionDeployment @SessionDeploymentParameters
         if ($GatewayServer) {
             Add-RDServer -Server $GatewayServer -ConnectionBroker $ConnectionBroker -Role 'RDS-GATEWAY'
+            # Set $Global:ErrorActionPreference back to original value if command is successful
+            $Global:ErrorActionPreference = $OriginalErrorActionPreference
         }
     }
     catch {
+        # Set $Global:ErrorActionPreference back to original value after catching error
+        $Global:ErrorActionPreference = $OriginalErrorActionPreference
         Write-Verbose "Adding server to Remote Desktop deployment."
 
         Write-Verbose "Checking SessionHost Deployment."
@@ -96,6 +107,18 @@ function Set-TargetResource
             }
         }
         
+        if ($LicenseServer) {
+            Write-Verbose "Checking LicenseServer Deployment."
+            if((Get-TargetResource @PSBoundParameters).LicenseServer -ieq $LicenseServer){
+                Write-Verbose "LicenseServer already deployed"
+            }
+            else {
+                Write-Verbose "Adding New LicenseServer Deployment"
+                Add-RDServer -Server $LicenseServer -ConnectionBroker $ConnectionBroker -Role 'RDS-LICENSING'
+            }
+        }
+
+
     }
 
 }
@@ -116,7 +139,8 @@ function Test-TargetResource
         [parameter(Mandatory)]
         [string] $WebAccessServer,
         [string] $GatewayExternalFqdn,
-        [string] $GatewayServer
+        [string] $GatewayServer,
+        [string] $LicenseServer
     )
     Write-Verbose "Checking RDSH role(s) is deployed on this node."
     $TestResult = $false
@@ -162,6 +186,21 @@ function Test-TargetResource
     else {
         Write-Verbose "No GatewayServer specified in configuration"
     }
+
+    if ($LicenseServer) {
+        if ($GetTargetResourceResults.LicenseServer -ieq $LicenseServer ) {
+            Write-Verbose "LicenseServer Role is deployed on $LicenseServer"
+            $TestResult = $true
+        }
+        else {
+            Write-Verbose "LicenseServer Role is MISSING on $LicenseServer"
+            Return $false
+        }
+    }
+    else {
+        Write-Verbose "No LicenseServer specified in configuration"
+    }
+
 
     Return $TestResult
 }

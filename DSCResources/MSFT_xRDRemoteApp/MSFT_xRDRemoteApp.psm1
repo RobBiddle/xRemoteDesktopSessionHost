@@ -28,7 +28,7 @@ function Get-TargetResource
         [string] $RequiredCommandLine,
         [uint32] $IconIndex,
         [string] $IconPath,
-        [string] $UserGroups,
+        [string[]] $UserGroups,
         [boolean] $ShowInWebAccess
     )
         Write-Verbose "Getting published RemoteApp program $DisplayName, if one exists."
@@ -76,18 +76,19 @@ function Set-TargetResource
         [string] $RequiredCommandLine,
         [uint32] $IconIndex,
         [string] $IconPath,
-        [string] $UserGroups,
+        [string[]] $UserGroups,
         [boolean] $ShowInWebAccess
     )
-    Write-Verbose "Making updates to RemoteApp."
     $Collection = Get-RDSessionCollection -CollectionName $CollectionName -ConnectionBroker $ConnectionBroker  -ErrorAction SilentlyContinue
     if ($Collection -eq $null) {
         Throw "Collection named $CollectionName does not exist!  Use xRDSessionCollection configuration to create the collection."
     }
     if (!$(Get-RDRemoteApp -Alias $Alias)) {
+        Write-Verbose "Publishing a New RemoteApp wth Alias $Alias."
         New-RDRemoteApp @PSBoundParameters
         }
     else {
+        Write-Verbose "Making updates to existing RemoteApp $Alias."
         Set-RDRemoteApp @PSBoundParameters
     }
 }
@@ -118,7 +119,7 @@ function Test-TargetResource
         [string] $RequiredCommandLine,
         [uint32] $IconIndex,
         [string] $IconPath,
-        [string] $UserGroups,
+        [string[]] $UserGroups,
         [boolean] $ShowInWebAccess
     )
     Write-Verbose "Testing if RemoteApp is published."
@@ -131,8 +132,24 @@ function Test-TargetResource
     $PSBoundParameters.Remove("Debug") | out-null
     $Check = $true
     
-    $Get = Get-TargetResource -CollectionName $Collection.CollectionName -DisplayName $DisplayName -FilePath $FilePath -Alias $Alias
-    $PSBoundParameters.keys | ForEach-ObjectorEach-Object {if ($PSBoundParameters[$_] -ne $Get[$_]) {$Check = $false} }
+    $Get = Get-TargetResource -CollectionName $Collection.CollectionName -ConnectionBroker $ConnectionBroker -DisplayName $DisplayName -FilePath $FilePath -Alias $Alias
+    $PSBoundParameters.Remove("ConnectionBroker") | out-null
+    $PSBoundParameters.keys | ForEach-Object {
+        if ( ($PSBoundParameters[$_] -ne $null) -and ($Get[$_] -eq $null) ) {
+            $Check = $false
+        }
+        else {
+            $Differences = Compare-Object -ReferenceObject $PSBoundParameters[$_] -DifferenceObject $Get[$_]
+            if ($Differences) {
+                Write-Verbose "Property $_ is NOT in the desired state."
+                $Check = $false
+            }
+            else {
+                Write-Verbose "Property $_ is in the desired state."
+            }
+        }
+
+    }
     $Check
 }
 

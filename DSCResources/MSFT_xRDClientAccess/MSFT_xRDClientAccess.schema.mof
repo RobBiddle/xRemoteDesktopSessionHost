@@ -1,0 +1,7 @@
+
+[ClassVersion("1.0.0.0"), FriendlyName("XRDClientAccess")]
+class MSFT_XRDClientAccess : OMI_BaseResource
+{
+    [write, Description("Specifies the FQDN of a server to host the RD Connection Broker role service.")] string ConnectionBroker;
+    [key, Description("Specifies a DNS name for clients to use to connect to a Remote Desktop deployment.")] string ClientAccessName;
+};

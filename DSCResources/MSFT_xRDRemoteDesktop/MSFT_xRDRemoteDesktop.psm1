@@ -85,7 +85,7 @@ function Test-TargetResource {
     $Get = Get-TargetResource -CollectionName $Collection.CollectionName
     $PSBoundParameters.Remove("ConnectionBroker") | out-null
     $PSBoundParameters.keys | ForEach-Object {
-        if ($PSBoundParameters[$_] -ne $Get[$_]) {
+        if ($PSBoundParameters[$_] -ine $Get[$_]) {
             $Check = $false
         } 
     }

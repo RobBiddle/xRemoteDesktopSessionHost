@@ -118,7 +118,7 @@ function Test-TargetResource {
     $Get = Get-TargetResource @PSBoundParameters
     $PSBoundParameters.Remove("ConnectionBroker") | out-null
     $PSBoundParameters.keys | ForEach-Object {
-        if ($PSBoundParameters[$_] -ne $Get[$_]) {
+        if ($PSBoundParameters[$_] -ine $Get[$_]) {
             $Check = $false
         } 
     }
